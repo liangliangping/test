@@ -1,9 +1,11 @@
 window.addEventListener('load', function () {
     // 轮播图
     initCarousel()
-
+    // 获得月数据并渲染折线图
     XHRreq('month', monthHandle)
+    // 获得周数据并渲染饼状图和柱状图
     XHRreq('week', weekHandle)
+    //  导航条滑块效果
     slid()
 
 
@@ -25,6 +27,32 @@ function dingshiqi(obj, target, callback) {
         }
         obj.style.left = obj.offsetLeft + step + 'px';
     }, 15);
+}
+// 导航条滑块效果
+function slid() {
+    let slid = document.querySelector('.slid')
+    let navigation = document.querySelectorAll('.content1 .navs span')
+    console.log(navigation);
+    navigation.forEach((item) => {
+        item.addEventListener('mouseover', function () {
+            let x = slid.offsetLeft
+            let xx = item.offsetLeft
+            console.log(x, xx)
+            dingshiqi(slid, xx)
+        })
+        item.addEventListener('mouseout', function () {
+            let x = document.querySelector('.courent').offsetLeft
+            console.log(x)
+            dingshiqi(slid, x)
+        })
+        item.addEventListener('click', function () {
+            navigation.forEach(aa => {
+                aa.className = ''
+            })
+            item.className = 'courent'
+
+        })
+    })
 }
 // 轮播图
 function initCarousel() {
@@ -119,6 +147,7 @@ function initCarousel() {
     }, 1500)
 
 }
+// 初始化echarts
 function initChart(className, option) {
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.querySelector(className)
@@ -126,7 +155,23 @@ function initChart(className, option) {
     // 使用刚指定的配置项和数据显示图表。
     myChart.setOption(option);
 }
-// 月数据
+// 获得数据
+function XHRreq(type, fn) {
+    let xhr = new XMLHttpRequest()
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 300) {
+                fn(xhr.response.data)
+            }
+        }
+
+    }
+    xhr.open('get', `https://edu.telking.com/api/?type=${type}`, 'false')    //调用open()方法打开链接
+    xhr.send()                          //发送请求
+
+}
+// 月数据处理函数
 function monthHandle(data) {
     // 指定图表的配置项和数据
     let option = {
@@ -184,7 +229,7 @@ function monthHandle(data) {
     };
     initChart('.echart', option, data)
 }
-// 周数据
+// 周数据处理函数
 function weekHandle(data) {
     let arr = [];
     data.series.forEach((item, index) => {
@@ -276,45 +321,4 @@ function weekHandle(data) {
     initChart('.pie-chart', pieOption, data)
     initChart('.bar-chart', barOption, data)
 }
-// 获得数据
-function XHRreq(type, fn) {
-    let xhr = new XMLHttpRequest()
-    xhr.responseType = 'json';
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 300) {
-                fn(xhr.response.data)
-            }
-        }
 
-    }
-    xhr.open('get', `https://edu.telking.com/api/?type=${type}`, 'false')    //调用open()方法打开链接
-    xhr.send()                          //发送请求
-
-}
-// 导航栏
-function slid() {
-    let slid = document.querySelector('.slid')
-    let navigation = document.querySelectorAll('.content1 .navs span')
-    console.log(navigation);
-    navigation.forEach((item) => {
-        item.addEventListener('mouseover', function () {
-            let x = slid.offsetLeft
-            let xx = item.offsetLeft
-            console.log(x, xx)
-            dingshiqi(slid, xx)
-        })
-        item.addEventListener('mouseout', function () {
-            let x = document.querySelector('.courent').offsetLeft
-            console.log(x)
-            dingshiqi(slid, x)
-        })
-        item.addEventListener('click', function () {
-            navigation.forEach(aa => {
-                aa.className = ''
-            })
-            item.className = 'courent'
-
-        })
-    })
-}
